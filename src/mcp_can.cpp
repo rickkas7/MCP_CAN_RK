@@ -1077,10 +1077,10 @@ INT8U MCP_CAN::sendMsg()
         } while (res1 && (uiTimeOut < TIMEOUTVALUE));
 
         if (res1 == 0) {
-            _log.info("initial request timed out but successfully aborted");
+            _log.trace("initial request timed out but successfully aborted");
         }
         else {
-            _log.info("initial request timed out but abort timed out. May leak a TX buffer.");
+            _log.trace("initial request timed out but abort timed out. May leak a TX buffer.");
         }
 
         // Clear abort flag
