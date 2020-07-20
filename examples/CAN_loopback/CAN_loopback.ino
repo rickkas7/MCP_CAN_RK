@@ -9,6 +9,8 @@
 #include <mcp_can.h>
 #include <SPI.h>
 
+SYSTEM_THREAD(ENABLED);
+
 // CAN TX Variables
 unsigned long prevTX = 0;                                        // Variable to store last execution time
 const unsigned int invlTX = 1000;                                // One second interval constant
@@ -23,8 +25,8 @@ unsigned char rxBuf[8];
 char msgString[128];
 
 // CAN0 INT and CS
-#define CAN0_INT 2                              // Set INT to pin 2
-MCP_CAN CAN0(10);                               // Set CS to pin 10
+#define CAN0_INT A1                              // Set INT to pin A1
+MCP_CAN CAN0(A2);                               // Set CS to pin A2
 
 
 void setup()
@@ -32,7 +34,7 @@ void setup()
   Serial.begin(115200);  // CAN is running at 500,000BPS; 115,200BPS is SLOW, not FAST, thus 9600 is crippling.
   
   // Initialize MCP2515 running at 16MHz with a baudrate of 500kb/s and the masks and filters disabled.
-  if(CAN0.begin(MCP_ANY, CAN_500KBPS, MCP_16MHZ) == CAN_OK)
+  if(CAN0.begin(MCP_ANY, CAN_500KBPS, MCP_8MHZ) == CAN_OK)
     Serial.println("MCP2515 Initialized Successfully!");
   else
     Serial.println("Error Initializing MCP2515...");

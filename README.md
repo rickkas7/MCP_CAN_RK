@@ -1,5 +1,32 @@
-MCP_CAN Library for Arduino
-==============
+# MCP_CAN_RK Library for Particle
+
+This is a port of [MCP_CAN_lib](https://github.com/coryjfowler/MCP_CAN_lib) for Particle devices.
+
+Licensing note: The original library was distributed using the GNU Lesser General Public License, version 2.1. As such, there may be limitations using this with a closed-source commercial project because Particle firmware binaries are statically linked. See [this answer](http://answers.google.com/answers/threadview/id/439136.html) for more details.
+
+## Notes
+
+Be sure to correctly set the clock speed:
+
+```
+if (CAN0.begin(MCP_ANY, CAN_500KBPS, MCP_8MHZ) == CAN_OK)
+```
+
+The `MCP_8MHZ` must match the crystal on your board. It could be 8, 16, or 20 MHz.
+
+## Version history
+
+#### 1.5.0 (2020-06-23)
+
+- Initial port
+
+
+
+---
+
+The original README follows:
+
+## MCP_CAN Library for Arduino
 MCP_CAN library v1.5
 This library is compatible with any shield or board that uses the MCP2515 or MCP25625 CAN protocol controller.
 

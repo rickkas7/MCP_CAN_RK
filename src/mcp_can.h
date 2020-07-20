@@ -40,7 +40,7 @@ class MCP_CAN
     INT8U   m_nfilhit;                                                  // The number of the filter that matched the message
     INT8U   MCPCS;                                                      // Chip Select pin number
     INT8U   mcpMode;                                                    // Mode to return to after configurations are performed.
-    
+    SPIClass *m_spi = &SPI;
 
 /*********************************************************************************************************
  *  mcp2515 driver function 
@@ -104,7 +104,7 @@ class MCP_CAN
     INT8U sendMsg();                                                    // Send message
 
 public:
-    MCP_CAN(INT8U _CS);
+    MCP_CAN(INT8U _CS, SPIClass *_spi = &SPI);
     INT8U begin(INT8U idmodeset, INT8U speedset, INT8U clockset);       // Initialize controller parameters
     INT8U init_Mask(INT8U num, INT8U ext, INT32U ulData);               // Initialize Mask(s)
     INT8U init_Mask(INT8U num, INT32U ulData);                          // Initialize Mask(s)

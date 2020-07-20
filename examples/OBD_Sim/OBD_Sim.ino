@@ -11,18 +11,20 @@
 #include <mcp_can.h>
 #include <SPI.h>
 
+SYSTEM_THREAD(ENABLED);
+SerialLogHandler logHandler(LOG_LEVEL_TRACE);
 
 #define PAD 0x00
 
 // What CAN ID type?  Standard or Extended
-#define standard 0
+#define standard 1
 
 // 7E0/8 = Engine ECM
 // 7E1/9 = Transmission ECM
 
 #if standard == 1
-  #define REPLY_ID 0x7E9
-  #define LISTEN_ID 0x7E1
+  #define REPLY_ID 0x7E8
+  #define LISTEN_ID 0x7E0
   #define FUNCTIONAL_ID 0x7DF  
 #else
   #define REPLY_ID 0x98DAF101
@@ -37,33 +39,35 @@ byte dlc;
 byte rxBuf[8];
 
 // CAN Interrupt and Chip Select
-#define CAN0_INT 2                              // Set CAN0 INT to pin 2
-MCP_CAN CAN0(9);                                // Set CAN0 CS to pin 9
+#define CAN0_INT A1                              // Set INT to pin A1
+MCP_CAN CAN0(A2);                               // Set CS to pin A2
 
 
 void setup()
 {
-  Serial.begin(115200);
-  while(!Serial);
+  // Serial.begin(115200);
+
+  // Wait 10 seconds for USB debug serial to be connected (plus 1 more)
+  waitFor(Serial.isConnected, 10000);
+  delay(1000);
   
   // Initialize MCP2515 running at 16MHz with a baudrate of 500kb/s and the masks and filters disabled.
-  if(CAN0.begin(MCP_STDEXT, CAN_500KBPS, MCP_20MHZ) == CAN_OK)
-    Serial.println("MCP2515 Initialized Successfully!");
+  if(CAN0.begin(MCP_STDEXT, CAN_500KBPS, MCP_8MHZ) == CAN_OK)
+    Log.info("MCP2515 Initialized Successfully!");
   else
-    Serial.println("Error Initializing MCP2515...");
-
+    Log.error("Error Initializing MCP2515...");
 
 #if standard == 1
   // Standard ID Filters
   CAN0.init_Mask(0,0x7F00000);                // Init first mask...
   CAN0.init_Filt(0,0x7DF0000);                // Init first filter...
-  CAN0.init_Filt(1,0x7E10000);                // Init second filter...
+  CAN0.init_Filt(1,0x7E00000);                // Init second filter...
   
   CAN0.init_Mask(1,0x7F00000);                // Init second mask... 
   CAN0.init_Filt(2,0x7DF0000);                // Init third filter...
-  CAN0.init_Filt(3,0x7E10000);                // Init fouth filter...
+  CAN0.init_Filt(3,0x7E00000);                // Init fouth filter...
   CAN0.init_Filt(4,0x7DF0000);                // Init fifth filter...
-  CAN0.init_Filt(5,0x7E10000);                // Init sixth filter...
+  CAN0.init_Filt(5,0x7E00000);                // Init sixth filter...
 
 #else
   // Extended ID Filters
@@ -77,12 +81,12 @@ void setup()
   CAN0.init_Filt(4,0x90DB3300);                // Init fifth filter...
   CAN0.init_Filt(5,0x90DA0100);                // Init sixth filter...
 #endif
-  
+
   CAN0.setMode(MCP_NORMAL);                          // Set operation mode to normal so the MCP2515 sends acks to received data.
 
   pinMode(CAN0_INT, INPUT);                          // Configuring pin for /INT input
   
-  Serial.println("OBD-II CAN Simulator");
+  Log.info("OBD-II CAN Simulator");
 }
 
 void loop()
@@ -93,6 +97,7 @@ void loop()
     
     // First request from most adapters...
     if(rxId == FUNCTIONAL_ID){
+      Log.info("got request id=0x%x", rxId);
       obdReq(rxBuf);
     }       
   }
@@ -932,8 +937,11 @@ void obdReq(byte *data){
     unsupported(mode, pid);
   }
   
-  if(tx)
+  if(tx) {
     CAN0.sendMsgBuf(REPLY_ID, 8, txData);
+    Log.info("sending reply %02x %02x %02x %02x %02x %02x %02x %02x", 
+      txData[0], txData[1], txData[2], txData[3], txData[4], txData[5], txData[6], txData[7]);
+  }
 }
 
 
@@ -953,9 +961,7 @@ void negAck(byte mode, byte reason){
 
 // Generic debug serial output
 void unsupportedPrint(byte mode, byte pid){
-  char msgstring[64];
-  sprintf(msgstring, "Mode $%02X: Unsupported PID $%02X requested!", mode, pid);
-  Serial.println(msgstring);
+  Log.error("Mode $%02X: Unsupported PID $%02X requested!", mode, pid);
 }
 
 
@@ -1027,9 +1033,7 @@ void iso_tp(byte mode, byte pid, int len, byte *data){
     if(offset == len)
       not_done = false;
     else{
-      char msgstring[32];
-      sprintf(msgstring,"Offset: 0x%04X\tLen: 0x%04X", offset, len);
-      Serial.println(msgstring);
+      Log.info("Offset: 0x%04X  Len: 0x%04X", offset, len);
     }
 
 

@@ -4,8 +4,8 @@
 
 #include <mcp_can.h>
 #include <SPI.h>
-#include <Ethernet.h>
-#include <EthernetUdp.h>
+//#include <Ethernet.h>
+//#include <EthernetUdp.h>
 
 // Change these for your network!
 byte mac[] = {0x00, 0x55, 0x66, 0xEE, 0xFF, 0xFF};
@@ -23,7 +23,7 @@ char buffer[50];
 
 MCP_CAN CAN0(9);                                   // Set CS to pin 9
 
-EthernetUDP UDP;
+UDP udp;
 void setup()
 {
   Serial.begin(115200);
@@ -31,8 +31,8 @@ void setup()
   CAN0.begin(MCP_ANY, CAN_250KBPS, MCP_16MHZ);     // init CAN Bus with 250kb/s baudrate at 16MHz with Mask & Filters Disabled
   CAN0.setMode(MCP_NORMAL);                        // Set operation mode to normal so the MCP2515 sends acks to received data.
   pinMode(2, INPUT);                               // Setting pin 2, MCP2515 /INT, to input mode
-  Ethernet.begin(mac,ip);                          // Initialize Ethernet
-  UDP.begin(localPort);                            // Initialize the UDP listen port that is currently unused!
+  //Ethernet.begin(mac,ip);                          // Initialize Ethernet
+  udp.begin(localPort);                            // Initialize the UDP listen port that is currently unused!
 
   Serial.println("CAN to Ethernet...");
 }
@@ -48,9 +48,9 @@ void loop()
       sprintf(buffer, "ID: %.8lX  Data: %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n\r",
               rxId, rxBuf[0], rxBuf[1], rxBuf[2], rxBuf[3], rxBuf[4], rxBuf[5], rxBuf[6], rxBuf[7]);
 
-      UDP.beginPacket(dest, remPort);
-      UDP.write(buffer);
-      UDP.endPacket();
+      udp.beginPacket(dest, remPort);
+      udp.write(buffer);
+      udp.endPacket();
     }
 }
 

@@ -1,0 +1,14 @@
+- build: examples/CAN_loopback
+  photon: [latest]
+  electron: [latest]
+  argon: [latest]
+  boron: [latest]
+- build: examples/CAN_receive
+  photon: [latest]
+- build: examples/CAN_send
+  photon: [latest]
+- build: examples/GetRPM
+  photon: [latest]
+  electron: [latest]
+- build: examples/OBD_Sim
+  photon: [latest]
